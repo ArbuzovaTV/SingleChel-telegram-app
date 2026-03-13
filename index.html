@@ -296,6 +296,7 @@ const telegramId = user ? String(user.id) : null;
 if (telegramId && await checkParticipation(event.id, telegramId)) {
   button.textContent = "✓ Вы записаны";
   button.style.backgroundColor = "#28a745";
+  button.style.cursor = "pointer";
 
   button.onclick = function () {
 
