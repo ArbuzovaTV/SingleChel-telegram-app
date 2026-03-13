@@ -3,24 +3,82 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Проверка Supabase</title>
+  <title>Встречи</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    #events {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .event-card {
+      background: #1c1c1c;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    .event-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .event-text {
+      margin: 6px 0;
+      color: #ddd;
+    }
+
+    .event-button {
+      margin-top: 14px;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: #2ea6ff;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .muted {
+      color: #aaa;
+    }
+
+    .error {
+      color: #ff8a8a;
+      white-space: pre-wrap;
+    }
+  </style>
 </head>
-<body style="background:#111; color:white; font-family:Arial; padding:20px;">
-  <h2>Проверка Supabase</h2>
-  <div id="status">Старт...</div>
+<body>
+  <h2>Ближайшие встречи</h2>
+  <div id="events" class="muted">Загружаю встречи...</div>
 
   <script>
     const SUPABASE_URL = "https://vwndungrimwhqavjmoqi.supabase.co";
     const SUPABASE_KEY = "sb_publishable_wat516OIujm-quDFBJ9VSQ_T1EWWZcT";
 
-    async function testSupabase() {
-      const status = document.getElementById("status");
-
-      status.innerText = "Отправляю запрос к Supabase...";
+    async function loadEvents() {
+      const container = document.getElementById("events");
+      container.innerHTML = "Загружаю встречи...";
 
       try {
         const response = await fetch(
-          SUPABASE_URL + "/rest/v1/events?select=*",
+          SUPABASE_URL + "/rest/v1/events?select=*&order=event_date.asc",
           {
             method: "GET",
             headers: {
@@ -32,14 +90,46 @@
 
         const text = await response.text();
 
-        status.innerText =
-          "Статус: " + response.status + "\n\nОтвет:\n" + text;
+        if (!response.ok) {
+          container.innerHTML = <div class="error">Ошибка ${response.status}\n${text}</div>;
+          return;
+        }
+
+        const data = JSON.parse(text);
+
+        if (!Array.isArray(data) || data.length === 0) {
+          container.innerHTML = <div class="muted">Пока нет доступных встреч.</div>;
+          return;
+        }
+
+        container.innerHTML = "";
+
+        data.forEach((event) => {
+          const card = document.createElement("div");
+          card.className = "event-card";
+
+          card.innerHTML = 
+            <div class="event-title">${event.title ?? ""}</div>
+            <div class="event-text">${event.description ?? ""}</div>
+            <div class="event-text">Дата: ${event.event_date ?? ""}</div>
+            <div class="event-text">Время: ${event.event_time ?? ""}</div>
+            <div class="event-text">Место: ${event.place ?? ""}</div>
+            <div class="event-text">Мест: ${event.max_participants ?? ""}</div>
+            <button class="event-button" onclick="joinEvent('${event.id}', '${event.title ?? ""}')">Участвовать</button>
+          ;
+
+          container.appendChild(card);
+        });
       } catch (error) {
-        status.innerText = "Ошибка JavaScript: " + error.message;
+        container.innerHTML = <div class="error">Ошибка JavaScript: ${error.message}</div>;
       }
     }
 
-    testSupabase();
+    function joinEvent(eventId, eventTitle) {
+      alert("Тестовая запись на встречу: " + eventTitle + " (" + eventId + ")");
+    }
+
+    loadEvents();
   </script>
 </body>
 </html>
