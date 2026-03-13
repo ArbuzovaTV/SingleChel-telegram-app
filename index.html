@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Встречи</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     body {
       margin: 0;
@@ -31,6 +32,13 @@
       color: #ddd;
     }
 
+    .user-box {
+      background: #1a2a36;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+
     button {
       margin-top: 12px;
       width: 100%;
@@ -49,12 +57,39 @@
   </style>
 </head>
 <body>
+  <div id="user" class="user-box">Проверяю Telegram...</div>
+
   <h2>Ближайшие встречи</h2>
   <div id="events">Загружаю встречи...</div>
 
   <script>
     const SUPABASE_URL = "https://vwndungrimwhqavjmoqi.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_wat516OIujm-quDFBJ9VSQ_T1EWWZcT";
+    const SUPABASE_KEY = "ВСТАВЬ_СЮДА_СВОЙ_PUBLISHABLE_KEY";
+
+    function showTelegramUser() {
+      const userBox = document.getElementById("user");
+
+      if (window.Telegram && window.Telegram.WebApp) {
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        const user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+
+        if (user) {
+          userBox.innerHTML =
+            "<b>Telegram подключён</b><br>" +
+            "ID: " + user.id + "<br>" +
+            "Имя: " + (user.first_name || "") + "<br>" +
+            "Username: @" + (user.username || "");
+        } else {
+          userBox.innerHTML =
+            "Приложение открыто не из Telegram Mini App или Telegram не передал данные пользователя.";
+        }
+      } else {
+        userBox.innerHTML =
+          "Telegram WebApp SDK не найден. Это нормально, если страница открыта просто в браузере.";
+      }
+    }
 
     async function loadEvents() {
       const container = document.getElementById("events");
@@ -116,7 +151,6 @@
           const date = document.createElement("div");
           date.className = "text";
           date.textContent = "Дата: " + (event.event_date || "");
-
           const time = document.createElement("div");
           time.className = "text";
           time.textContent = "Время: " + (event.event_time || "");
@@ -145,6 +179,7 @@
       }
     }
 
+    showTelegramUser();
     loadEvents();
   </script>
 </body>
