@@ -39,47 +39,53 @@
 <div id="events"></div>
 
 <script>
-
 const SUPABASE_URL = "https://vwndungrimwhqavjmoqi.supabase.co";
 const SUPABASE_KEY = "sb_publishable_wat516OIujm-quDFBJ9VSQ_T1EWWZcT";
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function loadEvents() {
-
-  const { data, error } = await supabase
-    .from('events')
-    .select('*');
-
   const container = document.getElementById("events");
+  container.innerHTML = "<p>Загружаю встречи...</p>";
 
-  data.forEach(event => {
+  const { data, error } = await supabaseClient
+    .from("events")
+    .select("*")
+    .order("event_date", { ascending: true });
 
+  if (error) {
+    container.innerHTML = <p>Ошибка загрузки: ${error.message}</p>;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    container.innerHTML = "<p>Пока нет доступных встреч.</p>";
+    return;
+  }
+
+  container.innerHTML = "";
+
+  data.forEach((event) => {
     const div = document.createElement("div");
     div.className = "event";
 
     div.innerHTML = 
-      <h3>${event.title}</h3>
-      <p>${event.description}</p>
-      <p>${event.event_date} ${event.event_time}</p>
-      <p>${event.place}</p>
+      <h3>${event.title ?? ""}</h3>
+      <p>${event.description ?? ""}</p>
+      <p>${event.event_date ?? ""} ${event.event_time ?? ""}</p>
+      <p>${event.place ?? ""}</p>
       <button onclick="joinEvent('${event.id}')">Участвовать</button>
     ;
 
     container.appendChild(div);
-
   });
-
 }
 
 async function joinEvent(eventId) {
-
-  alert("Запись пока тестовая");
-
+  alert("Запись пока тестовая. ID встречи: " + eventId);
 }
 
 loadEvents();
-
 </script>
 
 </body>
