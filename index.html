@@ -3,109 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Встречи</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f0f0f;
-      color: white;
-      padding: 20px;
-      margin: 0;
-    }
-
-    h2 {
-      margin-top: 0;
-    }
-
-    .event {
-      background: #1f1f1f;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-    }
-
-    button {
-      background: #2ea6ff;
-      border: none;
-      padding: 10px;
-      border-radius: 6px;
-      color: white;
-      margin-top: 10px;
-      width: 100%;
-      cursor: pointer;
-    }
-
-    .error {
-      color: #ff8080;
-      white-space: pre-wrap;
-    }
-
-    .muted {
-      color: #bdbdbd;
-    }
-  </style>
+  <title>Тест Mini App</title>
 </head>
-<body>
-  <h2>Ближайшие встречи</h2>
-  <div id="events" class="muted">Загружаю встречи...</div>
+<body style="background:#111; color:white; font-family:Arial; padding:20px;">
+  <h2>Проверка JavaScript</h2>
+  <div id="status">Если ты видишь это сообщение, значит HTML загрузился.</div>
 
   <script>
-    const SUPABASE_URL = "https://vwndungrimwhqavjmoqi.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_wat516OIujm-quDFBJ9VSQ_T1EWWZcT";
-
-    async function loadEvents() {
-      const container = document.getElementById("events");
-
-      try {
-        container.innerHTML = "<p>Отправляю запрос...</p>";
-
-        const response = await fetch(
-          ${SUPABASE_URL}/rest/v1/events?select=*&order=event_date.asc,
-          {
-            method: "GET",
-            headers: {
-              "apikey": SUPABASE_KEY,
-              "Authorization": Bearer ${SUPABASE_KEY},
-              "Content-Type": "application/json"
-            }
-          }
-        );
-
-        const text = await response.text();
-
-        container.innerHTML = <p>Статус ответа: ${response.status}</p><pre>${text}</pre>;
-
-        if (!response.ok) {
-          return;
-        }
-
-        let data = JSON.parse(text);
-
-        if (!Array.isArray(data) || data.length === 0) {
-          container.innerHTML = "<p>Встреч пока нет.</p>";
-          return;
-        }
-
-        container.innerHTML = "";
-
-        data.forEach((event) => {
-          const div = document.createElement("div");
-          div.className = "event";
-          div.innerHTML = 
-            <h3>${event.title ?? ""}</h3>
-            <p>${event.description ?? ""}</p>
-            <p>${event.event_date ?? ""} ${event.event_time ?? ""}</p>
-            <p>${event.place ?? ""}</p>
-            <button onclick="alert('Тестовая запись на встречу: ${event.id}')">Участвовать</button>
-          ;
-          container.appendChild(div);
-        });
-      } catch (error) {
-        container.innerHTML = <div class="error">Ошибка JavaScript: ${error.message}</div>;
-      }
-    }
-
-    loadEvents();
+    document.getElementById("status").innerText =
+      "JavaScript работает. Значит GitHub Pages обновился и скрипты выполняются.";
   </script>
 </body>
 </html>
