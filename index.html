@@ -13,37 +13,26 @@
       font-family: Arial, sans-serif;
     }
 
-    h2 {
-      margin-top: 0;
-      margin-bottom: 20px;
-    }
-
-    #events {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .event-card {
+    .card {
       background: #1c1c1c;
-      border-radius: 14px;
+      border-radius: 12px;
       padding: 16px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      margin-bottom: 16px;
     }
 
-    .event-title {
+    .title {
       font-size: 20px;
       font-weight: bold;
       margin-bottom: 10px;
     }
 
-    .event-text {
+    .text {
       margin: 6px 0;
       color: #ddd;
     }
 
-    .event-button {
-      margin-top: 14px;
+    button {
+      margin-top: 12px;
       width: 100%;
       padding: 12px;
       border: none;
@@ -51,11 +40,6 @@
       background: #2ea6ff;
       color: white;
       font-size: 16px;
-      cursor: pointer;
-    }
-
-    .muted {
-      color: #aaa;
     }
 
     .error {
@@ -66,7 +50,7 @@
 </head>
 <body>
   <h2>Ближайшие встречи</h2>
-  <div id="events" class="muted">Загружаю встречи...</div>
+  <div id="events">Загружаю встречи...</div>
 
   <script>
     const SUPABASE_URL = "https://vwndungrimwhqavjmoqi.supabase.co";
@@ -74,11 +58,11 @@
 
     async function loadEvents() {
       const container = document.getElementById("events");
-      container.innerHTML = "Загружаю встречи...";
+      container.textContent = "Загружаю встречи...";
 
       try {
         const response = await fetch(
-          SUPABASE_URL + "/rest/v1/events?select=*&order=event_date.asc",
+          SUPABASE_URL + "/rest/v1/events?select=*",
           {
             method: "GET",
             headers: {
@@ -91,42 +75,74 @@
         const text = await response.text();
 
         if (!response.ok) {
-          container.innerHTML = <div class="error">Ошибка ${response.status}\n${text}</div>;
+          container.innerHTML = '<div class="error">Ошибка ' + response.status + '\n' + text + '</div>';
           return;
         }
 
-        const data = JSON.parse(text);
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          container.innerHTML = '<div class="error">Ошибка разбора JSON:\n' + text + '</div>';
+          return;
+        }
 
-        if (!Array.isArray(data) || data.length === 0) {
-          container.innerHTML = <div class="muted">Пока нет доступных встреч.</div>;
+        if (!Array.isArray(data)) {
+          container.innerHTML = '<div class="error">Ответ не является массивом:\n' + text + '</div>';
+          return;
+        }
+
+        if (data.length === 0) {
+          container.textContent = "Встреч пока нет.";
           return;
         }
 
         container.innerHTML = "";
 
-        data.forEach((event) => {
-          const card = document.createElement("div");
-          card.className = "event-card";
+        for (let i = 0; i < data.length; i++) {
+          const event = data[i];
 
-          card.innerHTML = 
-            <div class="event-title">${event.title ?? ""}</div>
-            <div class="event-text">${event.description ?? ""}</div>
-            <div class="event-text">Дата: ${event.event_date ?? ""}</div>
-            <div class="event-text">Время: ${event.event_time ?? ""}</div>
-            <div class="event-text">Место: ${event.place ?? ""}</div>
-            <div class="event-text">Мест: ${event.max_participants ?? ""}</div>
-            <button class="event-button" onclick="joinEvent('${event.id}', '${event.title ?? ""}')">Участвовать</button>
-          ;
+          const card = document.createElement("div");
+          card.className = "card";
+
+          const title = document.createElement("div");
+          title.className = "title";
+          title.textContent = event.title || "";
+
+          const description = document.createElement("div");
+          description.className = "text";
+          description.textContent = event.description || "";
+
+          const date = document.createElement("div");
+          date.className = "text";
+          date.textContent = "Дата: " + (event.event_date || "");
+
+          const time = document.createElement("div");
+          time.className = "text";
+          time.textContent = "Время: " + (event.event_time || "");
+
+          const place = document.createElement("div");
+          place.className = "text";
+          place.textContent = "Место: " + (event.place || "");
+
+          const button = document.createElement("button");
+          button.textContent = "Участвовать";
+          button.onclick = function () {
+            alert("Тестовая запись на встречу: " + (event.title || ""));
+          };
+
+          card.appendChild(title);
+          card.appendChild(description);
+          card.appendChild(date);
+          card.appendChild(time);
+          card.appendChild(place);
+          card.appendChild(button);
 
           container.appendChild(card);
-        });
+        }
       } catch (error) {
-        container.innerHTML = <div class="error">Ошибка JavaScript: ${error.message}</div>;
+        container.innerHTML = '<div class="error">Ошибка JavaScript: ' + error.message + '</div>';
       }
-    }
-
-    function joinEvent(eventId, eventTitle) {
-      alert("Тестовая запись на встречу: " + eventTitle + " (" + eventId + ")");
     }
 
     loadEvents();
