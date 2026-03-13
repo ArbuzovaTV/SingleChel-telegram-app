@@ -191,6 +191,7 @@ async function joinEvent(eventId, eventTitle) {
 }
 
     alert("Вы записаны на встречу: " + eventTitle);
+    await loadEvents();
   } catch (error) {
     alert("Ошибка JavaScript: " + error.message);
   }
@@ -295,8 +296,10 @@ const telegramId = user ? String(user.id) : null;
 if (telegramId && await checkParticipation(event.id, telegramId)) {
   button.textContent = "✓ Вы записаны";
   button.disabled = true;
+  button.style.backgroundColor = "#28a745";
 } else {
   button.textContent = "Участвовать";
+  button.style.backgroundColor = "#2ea6ff";
   button.onclick = function () {
     joinEvent(event.id, event.title || "");
   };
