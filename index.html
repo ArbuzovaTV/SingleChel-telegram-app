@@ -3,15 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Тест Mini App</title>
+  <title>Проверка Supabase</title>
 </head>
 <body style="background:#111; color:white; font-family:Arial; padding:20px;">
-  <h2>Проверка JavaScript</h2>
-  <div id="status">Если ты видишь это сообщение, значит HTML загрузился.</div>
+  <h2>Проверка Supabase</h2>
+  <div id="status">Старт...</div>
 
   <script>
-    document.getElementById("status").innerText =
-      "JavaScript работает. Значит GitHub Pages обновился и скрипты выполняются.";
+    const SUPABASE_URL = "https://vwndungrimwhqavjmoqi.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_wat516OIujm-quDFBJ9VSQ_T1EWWZcT";
+
+    async function testSupabase() {
+      const status = document.getElementById("status");
+
+      status.innerText = "Отправляю запрос к Supabase...";
+
+      try {
+        const response = await fetch(
+          SUPABASE_URL + "/rest/v1/events?select=*",
+          {
+            method: "GET",
+            headers: {
+              apikey: SUPABASE_KEY,
+              Authorization: "Bearer " + SUPABASE_KEY
+            }
+          }
+        );
+
+        const text = await response.text();
+
+        status.innerText =
+          "Статус: " + response.status + "\n\nОтвет:\n" + text;
+      } catch (error) {
+        status.innerText = "Ошибка JavaScript: " + error.message;
+      }
+    }
+
+    testSupabase();
   </script>
 </body>
 </html>
