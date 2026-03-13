@@ -91,6 +91,101 @@
       }
     }
 
+async function joinEvent(eventId, eventTitle) {
+  try {
+    if (!(window.Telegram && window.Telegram.WebApp)) {
+      alert("Приложение нужно открыть внутри Telegram.");
+      return;
+    }
+
+    const tg = window.Telegram.WebApp;
+    const user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+
+    if (!user) {
+      alert("Telegram не передал данные пользователя.");
+      return;
+    }
+
+    const telegramId = String(user.id);
+    const username = user.username || null;
+    const firstName = user.first_name || null;
+
+    let userId = null;
+
+    const userResponse = await fetch(
+      SUPABASE_URL + "/rest/v1/users?telegram_id=eq." + encodeURIComponent(telegramId) + "&select=id",
+      {
+        method: "GET",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: "Bearer " + SUPABASE_KEY
+        }
+      }
+    );
+
+    const existingUsers = await userResponse.json();
+
+    if (Array.isArray(existingUsers) && existingUsers.length > 0) {
+      userId = existingUsers[0].id;
+    } else {
+      const createUserResponse = await fetch(
+        SUPABASE_URL + "/rest/v1/users",
+        {
+          method: "POST",
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: "Bearer " + SUPABASE_KEY,
+            "Content-Type": "application/json",
+            Prefer: "return=representation"
+          },
+          body: JSON.stringify({
+            telegram_id: telegramId,
+            username: username,
+            first_name: firstName
+          })
+        }
+      );
+
+      const createdUsers = await createUserResponse.json();
+
+      if (Array.isArray(createdUsers) && createdUsers.length > 0) {
+        userId = createdUsers[0].id;
+      }
+    }
+
+    if (!userId) {
+      alert("Не удалось создать или найти пользователя.");
+      return;
+    }
+
+    const participantResponse = await fetch(
+      SUPABASE_URL + "/rest/v1/participants",
+      {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: "Bearer " + SUPABASE_KEY,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          event_id: eventId
+        })
+      }
+    );
+
+    if (!participantResponse.ok) {
+      const errorText = await participantResponse.text();
+      alert("Ошибка записи на встречу: " + errorText);
+      return;
+    }
+
+    alert("Вы записаны на встречу: " + eventTitle);
+  } catch (error) {
+    alert("Ошибка JavaScript: " + error.message);
+  }
+}
+    
     async function loadEvents() {
       const container = document.getElementById("events");
       container.textContent = "Загружаю встречи...";
@@ -162,7 +257,7 @@
           const button = document.createElement("button");
           button.textContent = "Участвовать";
           button.onclick = function () {
-            alert("Тестовая запись на встречу: " + (event.title || ""));
+            joinEvent(event.id, event.title || "");
           };
 
           card.appendChild(title);
