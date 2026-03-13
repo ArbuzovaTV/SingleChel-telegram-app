@@ -177,7 +177,11 @@ async function joinEvent(eventId, eventTitle) {
    if (!participantResponse.ok) {
   const errorText = await participantResponse.text();
 
-  if (errorText.includes("unique_user_event")) {
+  if (
+    errorText.includes("unique_user_event") ||
+    errorText.includes("duplicate key") ||
+    errorText.includes("23505")
+  ) {
     alert("Вы уже записаны на эту встречу.");
   } else {
     alert("Ошибка записи на встречу: " + errorText);
