@@ -57,6 +57,8 @@
       const container = document.getElementById("events");
 
       try {
+        container.innerHTML = "<p>Отправляю запрос...</p>";
+
         const response = await fetch(
           ${SUPABASE_URL}/rest/v1/events?select=*&order=event_date.asc,
           {
@@ -71,21 +73,16 @@
 
         const text = await response.text();
 
+        container.innerHTML = <p>Статус ответа: ${response.status}</p><pre>${text}</pre>;
+
         if (!response.ok) {
-          container.innerHTML = <div class="error">Ошибка HTTP ${response.status}\n${text}</div>;
           return;
         }
 
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch (e) {
-          container.innerHTML = <div class="error">Не удалось разобрать ответ сервера:\n${text}</div>;
-          return;
-        }
+        let data = JSON.parse(text);
 
         if (!Array.isArray(data) || data.length === 0) {
-          container.innerHTML = <div class="muted">Встреч пока нет или API вернул пустой список.</div>;
+          container.innerHTML = "<p>Встреч пока нет.</p>";
           return;
         }
 
@@ -104,7 +101,7 @@
           container.appendChild(div);
         });
       } catch (error) {
-        container.innerHTML = <div class="error">Ошибка JavaScript:\n${error.message}</div>;
+        container.innerHTML = <div class="error">Ошибка JavaScript: ${error.message}</div>;
       }
     }
 
